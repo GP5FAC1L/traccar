@@ -44,7 +44,7 @@ public class MobilogixProtocolDecoder extends BaseProtocolDecoder {
             .expression("[^,]+,")                // protocol version
             .expression("([^,]+),")              // serial number
             .number("(xx),")                     // status
-            .number("(d+.d+)")                   // battery
+            .number("(d+.d+)")                   // power
             .groupBegin()
             .text(",")
             .number("(d)")                       // satellites
@@ -53,7 +53,8 @@ public class MobilogixProtocolDecoder extends BaseProtocolDecoder {
             .number("(-?d+.d+),")                // latitude
             .number("(-?d+.d+),")                // longitude
             .number("(d+.?d*),")                 // speed
-            .number("(d+.?d*)")                  // course
+            .number("(d+.?d*),")                 // course
+            .number("(d+.d+)")                   // battery
             .groupEnd("?")
             .any()
             .compile();
@@ -123,9 +124,9 @@ public class MobilogixProtocolDecoder extends BaseProtocolDecoder {
         position.set(Position.KEY_MOTION, BitUtil.check(status, 3));
         position.set(Position.KEY_STATUS, status);
 
-        position.set(Position.KEY_BATTERY, parser.nextDouble());
+        position.set(Position.KEY_POWER, parser.nextDouble());
 
-        if (parser.hasNext(7)) {
+        if (parser.hasNext(8)) {
 
             position.set(Position.KEY_SATELLITES, parser.nextInt());
             position.set(Position.KEY_RSSI, 6 * parser.nextInt() - 111);
@@ -137,6 +138,7 @@ public class MobilogixProtocolDecoder extends BaseProtocolDecoder {
             position.setLongitude(parser.nextDouble());
             position.setSpeed(UnitsConverter.knotsFromKph(parser.nextDouble()));
             position.setCourse(parser.nextDouble());
+            position.set(Position.KEY_BATTERY, parser.nextDouble());
 
         } else {
 
